@@ -5,6 +5,7 @@ specifically with pandas compatibility in mind.
 """
 
 import numpy as np
+from astropy.timeseries import LombScargle
 
 # From c. 2012.
 def delta (m, sigma_m, mean_m, n):
@@ -53,9 +54,9 @@ def S (j, sigma_j, h, sigma_h, k, sigma_k) :
     if n < 2:
         return 0
 
-    d_j = delta(j, sigma_j, j.mean(), n)
-    d_h = delta(h, sigma_h, h.mean(), n)
-    d_k = delta(k, sigma_k, k.mean(), n)
+    d_j = delta(j, sigma_j, np.nanmean(j), n)
+    d_h = delta(h, sigma_h, np.nanmean(h), n)
+    d_k = delta(k, sigma_k, np.nanmean(k), n)
 
     P_i = np.array( [d_j * d_h,
                      d_h * d_k,
@@ -64,7 +65,7 @@ def S (j, sigma_j, h, sigma_h, k, sigma_k) :
     # I originally had two sums going: one over P_i, and one over all the 
     # elements of n, but then I realized that a single sum over all axes
     # did the exact same thing (I tested it) so now it's back to one sum.
-    s = np.sum( np.sign( P_i ) * np.sqrt( np.abs( P_i ))) /(n*1.)
+    s = np.nansum( np.sign( P_i ) * np.sqrt( np.abs( P_i ))) /(n*1.)
 
     return s
 
@@ -89,5 +90,49 @@ def chisq(group):
     
     return ((d - d.mean())**2 / err**2).sum()
 
+
+def j_chisq_red(group):
+    d = group['JAPERMAG3']
+    err = group['JAPERMAG3ERR']
+    
+    return ((d - d.mean())**2 / err**2).sum() / d.size
+
+
+def h_chisq_red(group):
+    d = group['HAPERMAG3']
+    err = group['HAPERMAG3ERR']
+    
+    return ((d - d.mean())**2 / err**2).sum() / d.size
+
+
+def k_chisq_red(group):
+    d = group['KAPERMAG3']
+    err = group['KAPERMAG3ERR']
+    
+    return ((d - d.mean())**2 / err**2).sum() / d.size
+
 # q2_chisq = q2_groupby.apply(chisq)
 # q2_stetson = q2_groupby.apply(threeband_stetson_pandas)
+
+def j_period_fap(group):
+    t = group['MEANMJDOBS']
+    y = group['JAPERMAG3']
+    dy = group['JAPERMAG3ERR']
+
+    ls = LombScargle
+
+"""
+def wavg(group):
+    d = group['data']
+    w = group['weights']
+    return (d * w).sum() / w.sum()
+
+def chisq(group):
+    d = group['JAPERMAG3']
+    err = group['JAPERMAG3ERR']
+    
+    return ((d - d.mean())**2 / err**2).sum()
+
+q2_chisq = q2_groupby.apply(chisq)
+
+"""
