@@ -14,13 +14,13 @@ from stetson_2020 import (
     k_chisq_red,
     j_period_fap,
     h_period_fap,
-    k_period_fap
+    k_period_fap,
 )
 
 from astropy.table import Table
 
-dat = Table.read("WSERV11_results6_23_31_38_30286.fits", format="fits")
-name = "WSERV11"
+dat = Table.read("WSERV8_results6_23_50_28_30335.fits", format="fits")
+name = "WSERV8"
 
 null = -999999488.0
 
@@ -97,20 +97,7 @@ qh_sourceids = df_medians[qh].index
 qk_sourceids = df_medians[qk].index
 
 df_q2 = df[np.in1d(df["SOURCEID"], q2_sourceids)]
-df_q2_means = df_q2.groupby("SOURCEID").aggregate(np.nanmean)
 df_q2_stetson = df_q2.groupby("SOURCEID").apply(threeband_stetson_pandas)
-
-df_q2_means = df_q2.groupby("SOURCEID").aggregate(np.nanmean)
-
-q2_constants = df_q2_stetson.index[
-    (df_q2_stetson < 0.5) & 
-    (df_q2_means['JAPERMAG3'] > 12) &
-    (df_q2_means['JAPERMAG3'] < 14) &
-    (df_q2_means['HAPERMAG3'] > 12) &
-    (df_q2_means['HAPERMAG3'] < 14) &
-    (df_q2_means['KAPERMAG3'] > 12) &
-    (df_q2_means['KAPERMAG3'] < 14) 
-]
 
 q2_variables = df_q2_stetson.index[df_q2_stetson > 2.5]
 
@@ -141,6 +128,6 @@ H_periods = q12var_df_grouped.apply(h_period_fap)
 K_periods = q12var_df_grouped.apply(k_period_fap)
 
 variable_means = q12var_df_grouped.aggregate(np.nanmean)
-variable_means['J_periods'] = J_periods
-variable_means['H_periods'] = H_periods
-variable_means['K_periods'] = K_periods
+variable_means["J_periods"] = J_periods
+variable_means["H_periods"] = H_periods
+variable_means["K_periods"] = K_periods

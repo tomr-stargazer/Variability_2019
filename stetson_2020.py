@@ -114,12 +114,53 @@ def k_chisq_red(group):
 # q2_chisq = q2_groupby.apply(chisq)
 # q2_stetson = q2_groupby.apply(threeband_stetson_pandas)
 
-def j_period_fap(group):
-    t = group['MEANMJDOBS']
-    y = group['JAPERMAG3']
-    dy = group['JAPERMAG3ERR']
+# def j_period_fap(group):
+#     _t = group['MEANMJDOBS']
+#     _y = group['JAPERMAG3']
+#     _dy = group['JAPERMAG3ERR']
 
-    ls = LombScargle
+#     t = _t[~np.isnan(_y)]
+#     y = _y[~np.isnan(_y)]
+#     dy = _dy[~np.isnan(_y)]
+
+#     ls = LombScargle(t, y, dy)
+#     try:
+#         frequency, power = ls.autopower()
+
+#         best_period = 1/frequency[power==power.max()][0]
+#         fap = ls.false_alarm_probability(power.max())
+
+#         return best_period, fap
+#     except ValueError:
+#         return np.nan, np.nan
+
+
+def period_fap(group, band):
+    _t = group['MEANMJDOBS']
+    _y = group[band.upper()+'APERMAG3']
+    _dy = group[band.upper()+'APERMAG3ERR']
+
+    t = _t[~np.isnan(_y)]
+    y = _y[~np.isnan(_y)]
+    dy = _dy[~np.isnan(_y)]
+
+    ls = LombScargle(t, y, dy)
+    try:
+        frequency, power = ls.autopower()
+
+        best_period = 1/frequency[power==power.max()][0]
+        fap = ls.false_alarm_probability(power.max())
+
+        return best_period, fap
+    except ValueError:
+        return np.nan, np.nan
+
+def j_period_fap(group):
+    return period_fap(group, 'J')
+def h_period_fap(group):
+    return period_fap(group, 'H')
+def k_period_fap(group):
+    return period_fap(group, 'K')
 
 """
 def wavg(group):
